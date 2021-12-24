@@ -1,22 +1,16 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# Getting Started
+# Cook Inlet Harbor Seal Movement
 
--   install and setup `renv`
--   add raw data to `data-raw`
--   confirm license details
--   edit this README.Rmd and provide more details
--   edit `_targets.R` to develop analysis pipeline
+## Project Objectives
 
-# Project Short Title
+-   query telemetry data from PEP database for Cook Inlet harbor seal
+    project
+-   create tidy data objects for locations and haul-out behavior
+-   fit movement models w/ `{crawl}`
+-   correct predicted paths with `{pathroutr}`
 
--   insert project summary/abstract description
+## Project Progess
 
-# Project Objectives
-
--   provide outline/overview of project objectives
-
-# How to Contribute
-
--   edit the `CONTRIBUTING.md` and `CONDUCT.md`
+Project tasks, issues, and milestones are all tracked via GitHub Issues.
