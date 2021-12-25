@@ -16,5 +16,7 @@ output: github_document
 
 ## Project Progess
 
-Project tasks, issues, and milestones are all tracked via GitHub Issues.
+Project tasks, issues, and milestones are all tracked via 
+[GitHub Issues](https://github.com/jmlondon/cookinlet-seal-movt/issues) and coordinated
+within the [Cook Inlet Seal Data](https://github.com/users/jmlondon/projects/2/views/1) project.
 
