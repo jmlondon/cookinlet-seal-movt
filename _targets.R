@@ -8,7 +8,7 @@ sapply(files, source)
 
 # Set target-specific options such as packages.
 tar_option_set(packages = c(
-  "tidyverse",
+  "dplyr",
   "sf",
   "lubridate",
   "odbc",
@@ -28,7 +28,7 @@ list(
   tar_target(ci_data, get_ci_data()),
   tar_target(tidy_data, tidy_ci_data()),
   tar_target(fits, fit_crawl()),
-  tar_target(fits, refit_crawl()),
+  tar_target(refits, refit_crawl()),
   tar_target(paths, reroute_paths()),
-  tar_target(create_output_data())
+  tar_target(output_file,create_output_data(), format="file")
 )
