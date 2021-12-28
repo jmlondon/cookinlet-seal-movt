@@ -1,0 +1,5 @@
+name|type|data|command|depend|seed|path|time|size|bytes|format|iteration|parent|children|seconds|warnings|error
+files|object|e28188f835ec2548||||||||||||||
+get_ci_data|function|9f0ef0d489f03cf7||||||||||||||
+timeline_data|stem|976058a9a405965f|4e80e11d81f790ff|646646f78876bc3d|-976744221||t18989.9881774282s|a1c456b03adbfbf8|44|rds|vector|||1.569||
+locs_data|stem|a88a1b0574270e44|d4f5cf4986c5e20d|646646f78876bc3d|2093136533||t18989.9882971561s|d154273f8d7315af|1830131|rds|vector|||9.618||
