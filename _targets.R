@@ -9,6 +9,8 @@ sapply(files, source)
 # Set target-specific options such as packages.
 tar_option_set(packages = c(
   "dplyr",
+  "tidyr",
+  "purrr",
   "sf",
   "lubridate",
   "odbc",
@@ -18,6 +20,7 @@ tar_option_set(packages = c(
   "here",
   "keyringr",
   "pingr",
+  "argosfilter",
   "wcUtils"
 )
 )
@@ -27,9 +30,9 @@ tar_option_set(packages = c(
 list(
   tar_target(locs_data, get_ci_data("locs")),
   tar_target(timeline_data, get_ci_data("timelines")),
-  tar_target(locs_data_filt, speed_filter_locs()),
+  tar_target(locs_data_filt, speed_filter_locs(locs_data)),
   tar_target(fits, fit_crawl()),
   tar_target(refits, refit_crawl()),
   tar_target(paths, reroute_paths()),
-  tar_target(output_file,create_output_data(), format="file")
+  tar_target(output_file,create_output_data())
 )
