@@ -2,14 +2,19 @@ name|type|data|command|depend|seed|path|time|size|bytes|format|iteration|parent|
 timeline_data|stem|976058a9a405965f|4e80e11d81f790ff|646646f78876bc3d|-976744221||t18989.9881774282s|a1c456b03adbfbf8|44|rds|vector|||1.569||
 locs_data|stem|a88a1b0574270e44|d4f5cf4986c5e20d|646646f78876bc3d|2093136533||t18989.9882971561s|d154273f8d7315af|1830131|rds|vector|||9.618||
 paths|stem|976058a9a405965f|1c943a1c30f1937e|d5277ac0c63b3dbc|-365680473||t18990.0674335032s|a1c456b03adbfbf8|44|rds|vector|||1.054||
-fits|stem|976058a9a405965f|5aada35658b38335|4b882131ed933cda|-865860129||t18990.0674335721s|a1c456b03adbfbf8|44|rds|vector|||0.001||
 output_file|stem|976058a9a405965f|e6446e0d86a336a2|fcdc437177a7531c|-176751622||t18990.0680807372s|a1c456b03adbfbf8|44|rds|vector|||1.047||
 refits|stem|976058a9a405965f|2fcc47821926df00|61a8f19dfa7f909a|-1761515107||t18990.0680808736s|a1c456b03adbfbf8|44|rds|vector|||0||
-files|object|274716c91514c440||||||||||||||
-speed_filter_locs|function|03b91781751bcee3||||||||||||||
+locs_data_filt|stem|eca9bda8eaa5296f|f362c287990df6e0|75aa65860b44ae94|-1010037455||t18991.0156298465s|fedbab1c87ce0722|1529117|rds|vector|||56.941||
+land_osm|stem|024c2edcf70f63c3|0fc45dd42b392538|a771fcff8f4b51ee|-1053674584||t18991.0781997652s|ba3c1e69748ca557|4115236|rds|vector|||5405.752|attribute variables are assumed to be spatially constant throughout all geometries|
+fits|stem|ef3927176d507f88|add3aa4d53948f06|0795a41a70810639|-865860129||t18991.8812162127s|2eac7464aedd9c71|10690507|rds|vector|||77.546|package crawl was built under R version 4.1.2|
+final_fits|stem|06f867ccb2b54791|583120d3858b133c|e8ed820877f7a694|1021105436||t18991.9140781104s|24409ef58fed9673|19973796|rds|vector|||57.043|package crawl was built under R version 4.1.2|
+get_land_osm|function|3505c33da5da1eba||||||||||||||
+files|object|5dd508b0587d64aa||||||||||||||
+speed_filter_locs|function|c3ff3323e8269498||||||||||||||
 reroute_paths|function|7f751aef04cd03cd||||||||||||||
-fit_crawl|function|7f751aef04cd03cd||||||||||||||
+fit_crawl|function|b9b2adc6682d6a23||||||||||||||
 get_ci_data|function|9f0ef0d489f03cf7||||||||||||||
-refit_crawl|function|7f751aef04cd03cd||||||||||||||
+refit_crawl|function|5e4a0fc37c528342||||||||||||||
 create_output_data|function|7f751aef04cd03cd||||||||||||||
-locs_data_filt|stem|0826828a6e32604f|f362c287990df6e0|bd69f13e300d317e|-1010037455||t18990.0690215555s|32c2205dcf425c5a|1482970|rds|vector|||54.89||
+locs_fit|stem|072c1dd157bee48e|add3aa4d53948f06|0795a41a70810639|-1639604984||t18991.9162006049s|646b9fa2a8a6ee5d|10690517|rds|vector|||80.042|package crawl was built under R version 4.1.2|
+locs_refit|stem|2aea0f1e159a082d|71e531e94862ab97|d44f489b24c6c323|-1979670634||t18991.9168723865s|35605de4a11dbe80|9278328|rds|vector|||55.894||
