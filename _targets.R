@@ -13,6 +13,7 @@ tar_option_set(packages = c(
   "purrr",
   "forcats",
   "foreach",
+  "progressr",
   "sf",
   "rmapshaper",
   "lubridate",
@@ -26,7 +27,9 @@ tar_option_set(packages = c(
   "argosfilter",
   "wcUtils",
   "crawl",
-  "pathroutr"
+  "pathroutr",
+  "ggplot2",
+  "ggspatial"
 )
 )
 
@@ -37,8 +40,10 @@ list(
   tar_target(timeline_data, get_ci_data("timelines")),
   tar_target(locs_data_filt, speed_filter_locs(locs_data)),
   tar_target(land_osm, get_land_osm(locs_data_filt)),
+  tar_target(vis_graph, create_vis_graph(land_osm)),
   tar_target(locs_fit, fit_crawl(locs_data_filt)),
   tar_target(locs_refit, refit_crawl(locs_fit)),
-  tar_target(paths, reroute_paths(locs_refit, land_osm)),
-  tar_target(output_file,create_output_data(paths,timeline_data))
+  tar_target(paths, reroute_paths(locs_refit, land_osm, vis_graph)),
+  tar_target(path_lines, create_path_lines(paths)),
+  tar_target(predicted_plot, plot_predicted_lines(path_lines, land_osm))
 )
