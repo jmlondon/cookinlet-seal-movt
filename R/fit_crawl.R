@@ -17,7 +17,7 @@ fit_crawl <- function(locs_data_filt) {
       fixPar = c(log(250), log(500), log(1500), rep(NA,5)),
       constr=list(lower=c(rep(log(1500),3), rep(-Inf,2)),
                   upper=rep(Inf,5)),
-      attempts=10,
+      attempts=8,
       retrySD=0.25,
       initialSANN=NULL,
       # prior=function(x){dexp(x[1],1/2,log=TRUE) + dnorm(x[3],2,2.5)},

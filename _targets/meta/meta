@@ -1,26 +1,27 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|iteration|parent|children|seconds|warnings|error
-timeline_data|stem|976058a9a405965f|4e80e11d81f790ff|646646f78876bc3d|-976744221||t18989.9881774282s|a1c456b03adbfbf8|44|rds|vector|||1.569||
-locs_data|stem|a88a1b0574270e44|d4f5cf4986c5e20d|646646f78876bc3d|2093136533||t18989.9882971561s|d154273f8d7315af|1830131|rds|vector|||9.618||
-refits|stem|976058a9a405965f|2fcc47821926df00|61a8f19dfa7f909a|-1761515107||t18990.0680808736s|a1c456b03adbfbf8|44|rds|vector|||0||
-locs_data_filt|stem|eca9bda8eaa5296f|f362c287990df6e0|75aa65860b44ae94|-1010037455||t18991.0156298465s|fedbab1c87ce0722|1529117|rds|vector|||56.941||
-land_osm|stem|024c2edcf70f63c3|0fc45dd42b392538|a771fcff8f4b51ee|-1053674584||t18991.0781997652s|ba3c1e69748ca557|4115236|rds|vector|||5405.752|attribute variables are assumed to be spatially constant throughout all geometries|
-fits|stem|ef3927176d507f88|add3aa4d53948f06|0795a41a70810639|-865860129||t18991.8812162127s|2eac7464aedd9c71|10690507|rds|vector|||77.546|package crawl was built under R version 4.1.2|
-final_fits|stem|06f867ccb2b54791|583120d3858b133c|e8ed820877f7a694|1021105436||t18991.9140781104s|24409ef58fed9673|19973796|rds|vector|||57.043|package crawl was built under R version 4.1.2|
-locs_fit|stem|072c1dd157bee48e|add3aa4d53948f06|0795a41a70810639|-1639604984||t18991.9162006049s|646b9fa2a8a6ee5d|10690517|rds|vector|||80.042|package crawl was built under R version 4.1.2|
-locs_refit|stem|2aea0f1e159a082d|71e531e94862ab97|d44f489b24c6c323|-1979670634||t18991.9168723865s|35605de4a11dbe80|9278328|rds|vector|||55.894||
-vis_graph|stem|46cac23a382ff99e|8c30f68a939165ad|82ed8b1b6c0e7303|-731855606||t18991.9677625657s|38713e724d95b759|43164555|rds|vector|||161.607|package pathroutr was built under R version 4.1.2|
-paths|stem|cfb53237390f5c32|054df862c0e2374a|7521cfefbed40a15|-365680473||t18992.0153945987s|8df550b7ea7f3335|20116128|rds|vector|||2531.543|executing dopar sequentially no parallel backend registered|
-output_file|stem|976058a9a405965f|543cb2dad54cb122|7c27d860521a0623|-176751622||t18990.0680807372s||44|rds|vector|||0.004||unused arguments paths, timeline_data
-path_lines|stem|737e69b60351cf46|c93cb20c258adbb5|2fac078d8ea8e620|-197993653||t18992.063959385s|bfe5b5c31982823c|24270962|rds|vector|||2.148|package pathroutr was built under R version 4.1.2|
+locs_data_filt|stem|61ffdfabd49b41c4|f362c287990df6e0|04d32e078320fb8f|-1010037455||t19017.761915788s|fedbab1c87ce0722|1529117|rds|vector|||57.444||
+locs_fit|stem|d0be2c441e21bd9a|add3aa4d53948f06|d5a6012c60a75199|-1639604984||t19017.7628527869s|ac8301c56a48ba0b|10690481|rds|vector|||78.285||
+land_osm|stem|0cac76a5b64da133|0fc45dd42b392538|c0da9f2566e45b98|-1053674584||t19017.8015021545s|57faf66dc4f05584|4120464|rds|vector|||3339.02|attribute variables are assumed to be spatially constant throughout all geometries|
+locs_refit|stem|131bd298933316f5|71e531e94862ab97|941471daec821479|-1979670634||t19017.8021859559s|35605de4a11dbe80|9278328|rds|vector|||56.953||
+vis_graph|stem|7deea6a5577d980d|8c30f68a939165ad|dff77fafc081f799|-731855606||t19017.8041099376s|cf20b8bd1449a55c|43218845|rds|vector|||156.643||
+paths|stem|1e575fc8479e1f20|054df862c0e2374a|725812bb6f440c70|-365680473||t19017.8324237241s|eea0c0ca5dfd0c2d|20115935|rds|vector|||2441.772|executing dopar sequentially no parallel backend registered|
+path_lines|stem|b249f4c871f4dffe|c93cb20c258adbb5|8f110eeb7ade9b96|-197993653||t19017.8324907849s|0a0a0739cc99e6e8|24270800|rds|vector|||1.036||
+predicted_plot|stem|cf76d4a26f5a46c4|9cdbe5925062856f|e71b339eadd3115d|2038398139||t19017.832585537s|144108c8efca832d|73724526|rds|vector|||0.164||
+locs_data|stem|9c3c2d0a0ada4b85|d4f5cf4986c5e20d|858f4688a08a8124|2093136533||t19017.8801392484s|d154273f8d7315af|1830131|rds|vector|||9.435||
+timeline_data|stem|ad141839e4ade25b|4e80e11d81f790ff|858f4688a08a8124|-976744221||t19017.8802558795s|5ea5cd1fb70784f4|852617|rds|vector|||9.37||
+joint_data|stem|b975e7eb01889948|06ec7d95f3a1f133|cbd1e736c9c8e3bd|983968890||t19017.8969147459s|139f2dff17c09e71|9431761|rds|vector|||186.031||
+publish_pin|stem|b975e7eb01889948|e99ab8f64e29f287|d234c84d32441bca|1880807996||t19017.906954798s|139f2dff17c09e71|9431761|rds|vector|||1.482||
 get_land_osm|function|3505c33da5da1eba||||||||||||||
-files|object|09d682477b08edbc||||||||||||||
+files|object|0e8b85de527e9eea||||||||||||||
 create_vis_graph|function|3c09f748ffb8796e||||||||||||||
 plot_predicted_lines|function|e2916b9bb9c18316||||||||||||||
 speed_filter_locs|function|c3ff3323e8269498||||||||||||||
-reroute_paths|function|bd0e133ee2e0bf95||||||||||||||
-fit_crawl|function|b9b2adc6682d6a23||||||||||||||
-get_ci_data|function|9f0ef0d489f03cf7||||||||||||||
+reroute_paths|function|ed308d8870082169||||||||||||||
+publish_as_pin|function|4053768f50525a8c||||||||||||||
+fit_crawl|function|5793e3b7d17e2b2f||||||||||||||
+join_w_timeline|function|0876e15c7d86fcab||||||||||||||
+get_ci_data|function|f762847196293b43||||||||||||||
 refit_crawl|function|5e4a0fc37c528342||||||||||||||
 create_path_lines|function|b6da19f2c84f4364||||||||||||||
 create_output_data|function|7f751aef04cd03cd||||||||||||||
-predicted_plot|stem|e38dacefec0813db|9cdbe5925062856f|f71c1fa7c4c8f81c|2038398139||t18992.0687333458s|ec79aea2de6e9acc|73679998|rds|vector|||1.544|package pathroutr was built under R version 4.1.2|
+pin|stem|25dd241559cf6a7c|450591c2c0b9e06a|c0178e952e16c8fb|1279834816||t19017.9109662717s|0b52c5847220add9|82|rds|vector|||24.025||
