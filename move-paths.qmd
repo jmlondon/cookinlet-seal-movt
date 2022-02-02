@@ -1,0 +1,435 @@
+---
+title: "Estimating Movement Paths and Haul-out Behavior of Harbor Seals (_Phoca vitulina_) in Cook Inlet, Alaska"
+format: 
+  html:
+    theme: cosmo
+    mainfont: 'Public Sans'
+toc: true
+toc-depth: 2
+crossref:
+  tbl-prefix: Table
+  fig-prefix: Figure
+editor: visual
+---
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300&display=swap" rel="stylesheet">
+
+::: callout
+## Josh M. London
+
+*Wildlife Biologist*, Marine Mammal Laboratory\
+Alaska Fisheries Science Center, NOAA Fisheries\
+Seattle, Washington
+:::
+
+::: {.callout-note icon="false"}
+## Summary
+
+This document provides a description of the process used to import and tidy
+telemetry data observations from bio-loggers deployed on harbor seals in Cook
+Inlet, Alaska. The data include estimated location observations and percent-dry
+timelines that indicate the percentage of each hour the bio-logger was dry. The
+location observations are used to model the movement parameters and predict a
+likely track for each seal. Each of these movement paths is examined for regions
+that cross-land (not sensible for a harbor seal) and those sections are
+re-routed around the land. The initial movement model is developed using the R
+package `crawl` and the paths are re-routed around land with the R package
+`pathroutr`. The final data product is an `sf` spatial data frame of predicted
+points every hour and, when available, the associated percent-dry percentage for
+that hour --- this indicates what percentage of the hour the seal was likely
+hauled out on land resting.
+:::
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+
+knitr::opts_chunk$set(
+  warning = FALSE,
+  message = FALSE,
+  include = FALSE,
+  dev = "ragg_png"
+)
+
+library(targets)
+library(dplyr)
+library(tidyr)
+library(sf)
+library(ggspatial)
+library(gt)
+library(ggplot2)
+library(MetBrewer)
+
+options(scipen = 3, digits = 3)
+
+theme_set(theme_minimal(base_family = 'Public Sans'))
+#theme_replace(plot.title.position = "plot")
+```
+
+## Importing & Tidy-ing the Telemetry Data
+
+-   [x] background on the Cook Inlet research project (number of seals, years,
+    etc)
+-   [x] data handling and management
+-   [x] map of raw argos locations / consider hex count instead
+-   [x] figure of data density (number of seal hours/day over years)
+-   [ ] example figure of percent-dry timeline data
+
+### Background
+
+```{r summary-tbl-data, include=TRUE}
+
+summary_tbl <- tar_read(locs_data) %>% 
+  as_tibble() %>% 
+  select(deployid, speno, sex, age, tag_family, deploy_dt, end_dt) %>% 
+  group_by(speno, sex, age) %>% 
+  summarise(n_tags = n_distinct(tag_family), 
+            deploy_start = min(deploy_dt),
+            deploy_end = max(end_dt)
+            ) %>% 
+  group_by(sex, age) %>% 
+  summarise(n_tags = sum(n_tags),
+            n_seals = n())
+```
+
+Between 2004 and 2006, `r sum(summary_tbl$n_seals)` were captured and released
+with satellite-linked bio-loggers attached as part of a research effort in Cook
+Inlet, Alaska. Each transmitter was glued to the hair on the back of the seal
+using durable epoxy. Fourteen of the seals were also equipped with specially
+developed transmitters that were attached to one of the rear flippers. 
+@tbl-summary provides more information on the distriubtion of deployments
+across sex and age classes.
+Transmissions from the `r sum(summary_tbl$n_tags)` bio-loggers resulted in 
+`r nrow(tar_read(locs_data))` location estimates and 
+`r nrow(tar_read(timeline_data))` haul-out behavior records. Harbor seals captured
+in central and southern Cook Inlet ranged as far southwest as the Semidi Islands
+and some seals used habitats around the north and northeast side of Kodiak
+Island. There was a strong seasonal pattern of more coastal and restricted
+spatial use during the spring and summer (breeding, pupping, molting) and more
+wide-ranging movements within and outside of Cook Inlet during the winter
+months. These insights into seasonal harbor seal movements, behavior and
+abundance are critical for understanding foraging ecology, marine habitat use,
+and risk of impacts from industrial accidents such as oil spills.
+
+```{r tbl-summary, echo=FALSE, include=TRUE}
+#| tbl-cap: "The number of bio-loggers deployed on harbor seals in
+#| Cook Inlet, Alaska between 2004 and 2006 across sex and age class.
+#| A few seals were released with two devices attached; one adhered to
+#| the hair on dorsal side and another attached through the rear flipper
+#| inter-digital webbing."
+
+summary_tbl %>% 
+  mutate(sex = case_when(
+    sex == "F" ~ "Female",
+    sex == "M" ~ "Male"
+  )) %>% 
+  gt(
+    rowname_col = "age",
+    groupname_col = "sex"
+    ) %>% 
+  tab_header(
+    title = "Bio-logger Deployments on Harbor Seals") %>% 
+  tab_footnote(
+    footnote = "some seals were released with two bio-logger devices",
+    locations = cells_column_labels(
+      columns = n_tags
+    )
+  ) %>% 
+  tab_footnote(
+    footnote = "age class 'YEARLING' is often combined with 'SUBADULT",
+    locations = cells_stub(rows = "YEARLING")
+  ) %>% 
+  summary_rows(
+    groups = TRUE,
+    columns = c(n_tags, n_seals),
+    fns = list(total = "sum"),
+    missing_text = "",
+    formatter = fmt_integer
+  ) %>% 
+  grand_summary_rows(
+    columns = c(n_tags, n_seals),
+    fns = list(total = "sum"),
+    formatter = fmt_integer,
+    missing_text = ""
+  ) %>% 
+  tab_spanner(
+    label = "Sample Size",
+    columns = c(`n_tags`, `n_seals`)
+  ) %>%
+  cols_label(
+    sex = "Sex",
+    age = "Age Class",
+    n_tags = "# of tags",
+    n_seals = "# of seals"
+  ) %>%
+  tab_style(
+    style = list(
+      cell_text(
+        weight = "bold"
+      ),
+      cell_borders(
+        sides = "bottom",
+        color = "darkgrey",
+        weight = px(2)
+      ),
+      cell_borders(
+        sides = "top",
+        weight = px(0)
+      )
+    ),
+    locations = list(
+      cells_row_groups()
+    )
+  ) %>% 
+  tab_style(
+    style = list(
+      cell_text(
+        weight = "bold"
+      )
+    ),
+    locations = list(
+      cells_grand_summary(),
+      cells_stub_grand_summary()
+    )
+  ) %>% 
+  tab_style(
+    style = list(
+      cell_borders(
+        sides = "top",
+        color = "darkgrey",
+        weight = px(2)
+      )
+    ),
+    locations = list(
+      cells_grand_summary(),
+      cells_stub_grand_summary()
+    )
+  ) %>% 
+  tab_style(
+    style = list(
+      cell_borders(
+        sides = "bottom",
+        weight = px(0)
+      )
+    ),
+    locations = list(
+      cells_summary()
+    )
+  ) %>% 
+  tab_options(
+    table.width = pct(90),
+    table_body.hlines.width = 0,
+    stub.border.width = 0,
+    summary_row.background.color = "grey90",
+    table.font.size = "medium",
+    data_row.padding = px(3),
+    summary_row.padding = px(3),
+    grand_summary_row.padding = px(3)
+  )
+```
+
+### Data Handling and Management
+
+All the processes and code used for this project are [available as a repository
+on GitHub](https://github.com/jmlondon/cookinlet-seal-movt). Data retrieval,
+processing, analysis are all managed as a _pipeline_ via the `targets` package in
+R. For a more detailed exploration of the code and process, examine the 
+[_targets.R](https://github.com/jmlondon/cookinlet-seal-movt/blob/main/_targets.R) file
+and the functions [within the project's R folder](https://github.com/jmlondon/cookinlet-seal-movt/tree/main/R).
+
+
+All of the tags deployed on seals in Cook Inlet were manufactured by
+[Wildlife Computer](https://wildlifecomputers.com) and originally processed
+through their data portal. To facilitate access to data from the portal
+within R, we relied on the `wcUtils` R package which 
+[is available from GitHub](https://github.com/jmlondon/wcUtils). All telemetry
+data within the Polar Ecosystems Program (PEP) is maintained within a PostgreSQL
+database. This also includes important details regarding the individual seal
+(e.g. _speno_, age class, sex, morphometrics) and additional deployment metadata for
+each bio-logger (e.g. _deployid_, deployment start/end times, tag serial number).
+Initial data were queried from the database and, for the location observations,
+a course speed filter was applied (7.5 meters/sec) to remove any egregiously
+wrong location estimates. The percent-dry timeline data were mostly as is from
+the database
+
+::: {.callout-caution}
+The current version of the data delivered via `pins` **does not group
+deployments by _speno_**. Instead each deployment is treated as a separate
+individual seal. This is problematic for those seals that were released
+with two bio-logging devices. This will be resolved in the next major iteration
+of the data published via `pins`.
+:::
+
+### Mapping the Observed Location Data
+
+First, we will take a look at the spatial distribution of the observed location
+estimates (this is after the course speed filter has been applied). In
+@fig-obs-map, the observed locations are concentrated within the Cook Inlet
+region --- as would be expected --- but, note, there is considerable expansion
+of the range into the Shelikof Strait, Kodiak, and out toward the shelf break in
+the Gulf of Alaska. The error associated with observed locations is also evident
+as the spatial distribution extends well inland beyond what would be sensible
+for harbor seals.
+
+```{r obs-hexbins}
+map_data <- tar_read(locs_data) %>% 
+  dplyr::mutate(year = lubridate::year(locs_dt)) %>% 
+  dplyr::filter(year %in% c("2004", "2005", "2006")) %>% 
+  sf::st_crop(sf::st_bbox(tar_read(land_osm)))
+
+hexgrid <- sf::st_make_grid(st_bbox(map_data) %>% st_as_sfc(), cellsize = 25*1000,
+                            what = "polygons", square = FALSE) 
+hexgrid <- st_sf(index = 1:length(lengths(hexgrid)), hexgrid)
+
+hexbin <- st_join(map_data, hexgrid, join = st_intersects)
+
+locs_count <- hexgrid %>%
+  left_join(
+    count(hexbin, index) %>%
+      as_tibble() %>%
+      dplyr::select(index, ct=n)
+  ) %>% tidyr::drop_na()
+```
+
+```{r fig-obs-map, include=TRUE, echo = FALSE, fig.height=6}
+#| fig-cap: "Spatial distribution of observed location estimates from
+#| bio-loggers deployed on harbor seals in Cook Inlet from 2004-2006."
+
+esri_ocean <- paste0('https://services.arcgisonline.com/arcgis/rest/services/',
+                     'Ocean/World_Ocean_Base/MapServer/tile/${z}/${y}/${x}.jpeg')
+
+ggplot() +
+  annotation_map_tile(type = esri_ocean, zoomin=0, progress = "none") +
+  layer_spatial(
+    data = locs_count, size = 0.125,
+    aes(fill = ct, alpha = 0.35)
+  ) +
+  scale_fill_gradientn(colors = rev(met.brewer("Greek")),
+                    trans = "log10", aesthetics = "fill",
+    name = "Number of locations",
+    guide = guide_colorbar(barwidth = 1,title.position = "right",
+                           title.hjust = 0.5,
+                           barheight = 10)
+    ) + 
+  theme(legend.title = element_text(angle = -90)) +
+  guides(alpha="none") +
+  ggtitle("Spatial distribution of observed location data") +
+  labs(caption = bquote("One hexagonal cell represents 25"~km^2))
+```
+
+
+### Distribution of Data Across Time
+
+As with spatial distribution, it can also be informative to explore how the
+amount of data varied over time. This is especially important with bio-logging
+data because not all deployments start at the same time and deployment end
+dates are determined by a combination of factors (e.g. battery life, tag
+failures, adhesive failures, molt, and animal behavior). For this research
+project, there were two research cruises per year. One was timed to occur just
+after molt (September-October) so devices adhered to the hair would have potential to last for
+9-12 months. The other cruise was timed for May to correspond with the 
+expected median tag duration from the fall cruise. This also ensured a good
+sample size of deployments would be active during the pupping season (~June).
+
+
+```{r locs-day-tbl, include=TRUE}
+locs_day_tbl <- tar_read(locs_data) %>% 
+  tibble::as_tibble() %>% 
+  dplyr::mutate(yday = lubridate::yday(locs_dt),
+                year = lubridate::year(locs_dt)) %>% 
+  dplyr::filter(year %in% c("2004", "2005", "2006")) %>% 
+  dplyr::group_by(yday) %>% 
+  dplyr::count()
+```
+
+
+```{r, include=TRUE, echo=FALSE}
+#| label: fig-locs-by-day
+#| fig.height: 3
+#| fig-cap: "Distribution of observed location data by day-of-year and
+#| pooled across all years (2004-2006). The gap in August corresponds to the annual
+#| molt when seals grow a new coat of hair and bio-loggers adhered to the hair
+#| are shed. The higher intensity of location data in the spring and fall
+#| is reflective of the timing of capture cruises (typically May and September)."
+
+ggplot(data = locs_day_tbl, aes(x = yday, y = 1, fill = n))+
+        geom_tile()+
+        scale_fill_gradientn(colors = rev(met.brewer("Hokusai2"))) +
+  scale_x_continuous(breaks = c(1, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335),
+                           labels = c("01 Jan","01 Feb", "01 Mar", "01 Apr", "01 May", 
+                                      "01 Jun", "01 Jul", "01 Aug","01 Sep",
+                                      "01 Oct", "01 Nov", "01 Dec"),
+                           expand = expansion(mult = c(0, 0))) +
+        scale_y_continuous(expand = expansion(mult = c(0, 0))) +
+  guides(fill = guide_colorbar(title.position = "bottom", 
+                               title.hjust = 0.5, barwidth = 15,
+                               barheight = 0.5)) +
+  theme(axis.text.x = element_text(hjust = 0),
+        axis.text.y = element_blank(),
+        axis.title = element_blank(),
+        panel.grid = element_blank(),
+        legend.position = "bottom") +
+  labs(fill = "number of locations per day") +
+  ggtitle("Density of location observations varies across the calendar year",
+          subtitle = "data are presented as the number of locations per day collated across years (2004-2006)")
+```
+
+The density of locations presented in @fig-locs-by-day are pooled across all
+the years of the study. But, within a given year, there are larger gaps in
+data coverage that are important to note. @fig-locs-by-day-year presents the
+density of location data by year and provides a more insightful view. For
+instance, most of the data in the study for the months of January through
+April come from deployments in 2006. Only the months of May-July and 
+September-December are represented in more than one year --- all of which is to
+be expected given the original objectives of the study, typical duration of
+bio-loggers, and the timing of research cruises.
+
+```{r locs-day-yr-tbl, include=TRUE}
+locs_day_year_tbl <- tar_read(locs_data) %>% 
+  tibble::as_tibble() %>% 
+  dplyr::mutate(yday = lubridate::yday(locs_dt),
+                year = lubridate::year(locs_dt)) %>% 
+  dplyr::filter(year %in% c("2004", "2005", "2006")) %>% 
+  dplyr::group_by(year, yday) %>% 
+  dplyr::count()
+```
+
+```{r, include=TRUE, echo=FALSE}
+#| label: fig-locs-by-day-year
+#| fig.height: 5
+#| fig-cap: "Distribution of observed location data by day-of-year for
+#| each of the years in the study (2004-2006). The gaps (white space) correspond
+#| to periods of time within the year when no bio-loggers were transmitting. 
+#| The higher intensity of location data in the spring and fall
+#| is reflective of the timing of capture cruises (typically May and September)."
+
+ggplot(data = locs_day_year_tbl, aes(x = yday, y = 1, fill = n))+
+        geom_tile()+
+        scale_fill_gradientn(colors = rev(met.brewer("Hokusai2"))) +
+  scale_x_continuous(breaks = c(1, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335),
+                           labels = c("01 Jan","01 Feb", "01 Mar", "01 Apr", "01 May", 
+                                      "01 Jun", "01 Jul", "01 Aug","01 Sep",
+                                      "01 Oct", "01 Nov", "01 Dec"),
+                           expand = expansion(mult = c(0, 0))) +
+        scale_y_continuous(expand = expansion(mult = c(0, 0))) +
+  guides(fill = guide_colorbar(title.position = "bottom", 
+                               title.hjust = 0.5, barwidth = 15,
+                               barheight = 0.5)) +
+  facet_grid(year ~ .) +
+  theme(axis.text.x = element_text(hjust = 0),
+        axis.text.y = element_blank(),
+        axis.title = element_blank(),
+        panel.grid = element_blank(),
+        legend.position = "bottom") +
+  labs(fill = "number of locations per day") +
+  ggtitle("Density of location observations varies across the years",
+          subtitle = "data are presented as the number of locations per day")
+```
+
+### Percent-dry Timeline Data
+
+
+
+## Movement Modeling & Predicting Paths
+
+## Re-routing Paths Around Land Barriers
