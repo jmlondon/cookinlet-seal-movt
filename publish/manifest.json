@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "locale": "en_US",
+  "platform": "4.1.2",
+  "metadata": {
+    "appmode": "static",
+    "primary_rmd": null,
+    "primary_html": "move-paths.html",
+    "content_category": null,
+    "has_parameters": false
+  },
+  "packages": null,
+  "files": {
+    "move-paths_files/figure-html/fig-locs-by-day-1.png": {
+      "checksum": "9ef61cb5077a83613d92f6b6f216736e"
+    },
+    "move-paths_files/figure-html/fig-locs-by-day-year-1.png": {
+      "checksum": "20d234347cb4adb2c5078bc236433f84"
+    },
+    "move-paths_files/figure-html/fig-obs-map-1.png": {
+      "checksum": "c1a17592b3d8d4f91c64aae5d177362c"
+    },
+    "move-paths_files/figure-html/fig-percent-dry-1.png": {
+      "checksum": "dd1baba623f67c88fd02698c374a79e2"
+    },
+    "move-paths_files/libs/bootstrap/bootstrap-icons.css": {
+      "checksum": "139fe1b2c7c31452cf547126b3be7bc2"
+    },
+    "move-paths_files/libs/bootstrap/bootstrap-icons.woff": {
+      "checksum": "a892cbb9df5b3b2af3e42ded0489208b"
+    },
+    "move-paths_files/libs/bootstrap/bootstrap.min.css": {
+      "checksum": "cf7c5ba46928bef3ae03b401a5673634"
+    },
+    "move-paths_files/libs/bootstrap/bootstrap.min.js": {
+      "checksum": "7ccd9d390d31af98110f74f842ea9b32"
+    },
+    "move-paths_files/libs/clipboard/clipboard.min.js": {
+      "checksum": "cfdffb8895beeefe3c93ba1f8254062a"
+    },
+    "move-paths_files/libs/quarto-html/anchor.min.js": {
+      "checksum": "6ff8ab97d0f85b696d511d00451e2415"
+    },
+    "move-paths_files/libs/quarto-html/popper.min.js": {
+      "checksum": "65c9ab9008d19e62f75e50935effe3e9"
+    },
+    "move-paths_files/libs/quarto-html/quarto-syntax-highlighting.css": {
+      "checksum": "9e4a1572d182be2b54d23cce5f29ecf1"
+    },
+    "move-paths_files/libs/quarto-html/quarto.js": {
+      "checksum": "ec03e9e1d7e9edff424c60be71a110c2"
+    },
+    "move-paths_files/libs/quarto-html/tippy.css": {
+      "checksum": "417d7eeaf0883838973f911f89ca9719"
+    },
+    "move-paths_files/libs/quarto-html/tippy.umd.min.js": {
+      "checksum": "ead99fb990d12b7d22e0791ee03cddea"
+    },
+    "move-paths.html": {
+      "checksum": "e5be222c4663f6a6b62bbfa0b2d5e10f"
+    }
+  },
+  "users": null
+}
