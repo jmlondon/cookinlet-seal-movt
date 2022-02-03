@@ -97,8 +97,19 @@
   <nav id="TOC" role="doc-toc">
 <h2 id="toc-title">Table of contents</h2>
 <ul>
-<li><a href="#importing-tidy-ing-the-telemetry-data" class="nav-link active" data-scroll-target="#importing-tidy-ing-the-telemetry-data">Importing &amp; Tidy-ing the Telemetry Data</a></li>
-<li><a href="#movement-modeling-predicting-paths" class="nav-link" data-scroll-target="#movement-modeling-predicting-paths">Movement Modeling &amp; Predicting Paths</a></li>
+<li><a href="#importing-tidy-ing-the-telemetry-data" class="nav-link active" data-scroll-target="#importing-tidy-ing-the-telemetry-data">Importing &amp; Tidy-ing the Telemetry Data</a>
+<ul class="collapse">
+<li><a href="#background" class="nav-link" data-scroll-target="#background">Background</a></li>
+<li><a href="#data-handling-and-management" class="nav-link" data-scroll-target="#data-handling-and-management">Data Handling and Management</a></li>
+<li><a href="#mapping-the-observed-location-data" class="nav-link" data-scroll-target="#mapping-the-observed-location-data">Mapping the Observed Location Data</a></li>
+<li><a href="#distribution-of-data-across-time" class="nav-link" data-scroll-target="#distribution-of-data-across-time">Distribution of Data Across Time</a></li>
+<li><a href="#percent-dry-timeline-data" class="nav-link" data-scroll-target="#percent-dry-timeline-data">Percent-dry Timeline Data</a></li>
+</ul></li>
+<li><a href="#movement-modeling-predicting-paths" class="nav-link" data-scroll-target="#movement-modeling-predicting-paths">Movement Modeling &amp; Predicting Paths</a>
+<ul class="collapse">
+<li><a href="#fit-movement-models-with-crawl-package" class="nav-link" data-scroll-target="#fit-movement-models-with-crawl-package">Fit movement models with <code>crawl</code> package</a></li>
+<li><a href="#re-fit-any-problematic-deployments" class="nav-link" data-scroll-target="#re-fit-any-problematic-deployments">Re-fit any problematic deployments</a></li>
+</ul></li>
 <li><a href="#re-routing-paths-around-land-barriers" class="nav-link" data-scroll-target="#re-routing-paths-around-land-barriers">Re-routing Paths Around Land Barriers</a></li>
 </ul>
 </nav>
@@ -137,11 +148,16 @@ Summary
 <p>This document provides a description of the process used to import and tidy telemetry data observations from bio-loggers deployed on harbor seals in Cook Inlet, Alaska. The data include estimated location observations and percent-dry timelines that indicate the percentage of each hour the bio-logger was dry. The location observations are used to model the movement parameters and predict a likely track for each seal. Each of these movement paths is examined for regions that cross-land (not sensible for a harbor seal) and those sections are re-routed around the land. The initial movement model is developed using the R package <code>crawl</code> and the paths are re-routed around land with the R package <code>pathroutr</code>. The final data product is an <code>sf</code> spatial data frame of predicted points every hour and, when available, the associated percent-dry percentage for that hour — this indicates what percentage of the hour the seal was likely hauled out on land resting.</p>
 </div>
 </div>
+<div class="cell">
+
+</div>
 <section id="importing-tidy-ing-the-telemetry-data" class="level2">
 <h2 class="anchored" data-anchor-id="importing-tidy-ing-the-telemetry-data">Importing &amp; Tidy-ing the Telemetry Data</h2>
 <section id="background" class="level3">
 <h3 class="anchored" data-anchor-id="background">Background</h3>
 <div class="cell">
+<p></p><details>
+<summary>code to create summary table</summary><p></p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r cell-code code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>summary_tbl <span class="ot">&lt;-</span> <span class="fu">tar_read</span>(locs_data) <span class="sc">%&gt;%</span> </span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span> </span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(deployid, speno, sex, age, tag_family, deploy_dt, end_dt) <span class="sc">%&gt;%</span> </span>
@@ -153,17 +169,18 @@ Summary
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(sex, age) <span class="sc">%&gt;%</span> </span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n_tags =</span> <span class="fu">sum</span>(n_tags),</span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>            <span class="at">n_seals =</span> <span class="fu">n</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 </div>
 <p>Between 2004 and 2006, 76 were captured and released with satellite-linked bio-loggers attached as part of a research effort in Cook Inlet, Alaska. Each transmitter was glued to the hair on the back of the seal using durable epoxy. Fourteen of the seals were also equipped with specially developed transmitters that were attached to one of the rear flippers. <a href="#tbl-summary">Table&nbsp;1</a> provides more information on the distriubtion of deployments across sex and age classes. Transmissions from the 89 bio-loggers resulted in 73482 location estimates and 270168 haul-out behavior records. Harbor seals captured in central and southern Cook Inlet ranged as far southwest as the Semidi Islands and some seals used habitats around the north and northeast side of Kodiak Island. There was a strong seasonal pattern of more coastal and restricted spatial use during the spring and summer (breeding, pupping, molting) and more wide-ranging movements within and outside of Cook Inlet during the winter months. These insights into seasonal harbor seal movements, behavior and abundance are critical for understanding foraging ecology, marine habitat use, and risk of impacts from industrial accidents such as oil spills.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div id="tbl-summary" class="anchored">
-<div id="yhpserjhyp" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="sjrkivsemm" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#yhpserjhyp .gt_table {
+#sjrkivsemm .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -188,7 +205,7 @@ Summary
   border-left-color: #D3D3D3;
 }
 
-#yhpserjhyp .gt_heading {
+#sjrkivsemm .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -200,7 +217,7 @@ Summary
   border-right-color: #D3D3D3;
 }
 
-#yhpserjhyp .gt_title {
+#sjrkivsemm .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -210,7 +227,7 @@ Summary
   border-bottom-width: 0;
 }
 
-#yhpserjhyp .gt_subtitle {
+#sjrkivsemm .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -220,13 +237,13 @@ Summary
   border-top-width: 0;
 }
 
-#yhpserjhyp .gt_bottom_border {
+#sjrkivsemm .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#yhpserjhyp .gt_col_headings {
+#sjrkivsemm .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -241,7 +258,7 @@ Summary
   border-right-color: #D3D3D3;
 }
 
-#yhpserjhyp .gt_col_heading {
+#sjrkivsemm .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -261,7 +278,7 @@ Summary
   overflow-x: hidden;
 }
 
-#yhpserjhyp .gt_column_spanner_outer {
+#sjrkivsemm .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -273,15 +290,15 @@ Summary
   padding-right: 4px;
 }
 
-#yhpserjhyp .gt_column_spanner_outer:first-child {
+#sjrkivsemm .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#yhpserjhyp .gt_column_spanner_outer:last-child {
+#sjrkivsemm .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#yhpserjhyp .gt_column_spanner {
+#sjrkivsemm .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -293,7 +310,7 @@ Summary
   width: 100%;
 }
 
-#yhpserjhyp .gt_group_heading {
+#sjrkivsemm .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -315,7 +332,7 @@ Summary
   vertical-align: middle;
 }
 
-#yhpserjhyp .gt_empty_group_heading {
+#sjrkivsemm .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -330,15 +347,15 @@ Summary
   vertical-align: middle;
 }
 
-#yhpserjhyp .gt_from_md > :first-child {
+#sjrkivsemm .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#yhpserjhyp .gt_from_md > :last-child {
+#sjrkivsemm .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#yhpserjhyp .gt_row {
+#sjrkivsemm .gt_row {
   padding-top: 3px;
   padding-bottom: 3px;
   padding-left: 5px;
@@ -357,7 +374,7 @@ Summary
   overflow-x: hidden;
 }
 
-#yhpserjhyp .gt_stub {
+#sjrkivsemm .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -369,7 +386,7 @@ Summary
   padding-left: 12px;
 }
 
-#yhpserjhyp .gt_summary_row {
+#sjrkivsemm .gt_summary_row {
   color: #333333;
   background-color: #E5E5E5;
   text-transform: inherit;
@@ -379,7 +396,7 @@ Summary
   padding-right: 5px;
 }
 
-#yhpserjhyp .gt_first_summary_row {
+#sjrkivsemm .gt_first_summary_row {
   padding-top: 3px;
   padding-bottom: 3px;
   padding-left: 5px;
@@ -389,7 +406,7 @@ Summary
   border-top-color: #D3D3D3;
 }
 
-#yhpserjhyp .gt_grand_summary_row {
+#sjrkivsemm .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -399,7 +416,7 @@ Summary
   padding-right: 5px;
 }
 
-#yhpserjhyp .gt_first_grand_summary_row {
+#sjrkivsemm .gt_first_grand_summary_row {
   padding-top: 3px;
   padding-bottom: 3px;
   padding-left: 5px;
@@ -409,11 +426,11 @@ Summary
   border-top-color: #D3D3D3;
 }
 
-#yhpserjhyp .gt_striped {
+#sjrkivsemm .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#yhpserjhyp .gt_table_body {
+#sjrkivsemm .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -422,7 +439,7 @@ Summary
   border-bottom-color: #D3D3D3;
 }
 
-#yhpserjhyp .gt_footnotes {
+#sjrkivsemm .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -436,13 +453,13 @@ Summary
   border-right-color: #D3D3D3;
 }
 
-#yhpserjhyp .gt_footnote {
+#sjrkivsemm .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#yhpserjhyp .gt_sourcenotes {
+#sjrkivsemm .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -456,41 +473,41 @@ Summary
   border-right-color: #D3D3D3;
 }
 
-#yhpserjhyp .gt_sourcenote {
+#sjrkivsemm .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#yhpserjhyp .gt_left {
+#sjrkivsemm .gt_left {
   text-align: left;
 }
 
-#yhpserjhyp .gt_center {
+#sjrkivsemm .gt_center {
   text-align: center;
 }
 
-#yhpserjhyp .gt_right {
+#sjrkivsemm .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#yhpserjhyp .gt_font_normal {
+#sjrkivsemm .gt_font_normal {
   font-weight: normal;
 }
 
-#yhpserjhyp .gt_font_bold {
+#sjrkivsemm .gt_font_bold {
   font-weight: bold;
 }
 
-#yhpserjhyp .gt_font_italic {
+#sjrkivsemm .gt_font_italic {
   font-style: italic;
 }
 
-#yhpserjhyp .gt_super {
+#sjrkivsemm .gt_super {
   font-size: 65%;
 }
 
-#yhpserjhyp .gt_footnote_marks {
+#sjrkivsemm .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 65%;
@@ -613,6 +630,28 @@ Caution
 <h3 class="anchored" data-anchor-id="mapping-the-observed-location-data">Mapping the Observed Location Data</h3>
 <p>First, we will take a look at the spatial distribution of the observed location estimates (this is after the course speed filter has been applied). In <a href="#fig-obs-map">Figure&nbsp;1</a>, the observed locations are concentrated within the Cook Inlet region — as would be expected — but, note, there is considerable expansion of the range into the Shelikof Strait, Kodiak, and out toward the shelf break in the Gulf of Alaska. The error associated with observed locations is also evident as the spatial distribution extends well inland beyond what would be sensible for harbor seals.</p>
 <div class="cell">
+<p></p><details>
+<summary>code for map data</summary><p></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r cell-code code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>map_data <span class="ot">&lt;-</span> <span class="fu">tar_read</span>(locs_data) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">year =</span> lubridate<span class="sc">::</span><span class="fu">year</span>(locs_dt)) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"2004"</span>, <span class="st">"2005"</span>, <span class="st">"2006"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_crop</span>(sf<span class="sc">::</span><span class="fu">st_bbox</span>(<span class="fu">tar_read</span>(land_osm)))</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>hexgrid <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_make_grid</span>(<span class="fu">st_bbox</span>(map_data) <span class="sc">%&gt;%</span> <span class="fu">st_as_sfc</span>(), <span class="at">cellsize =</span> <span class="dv">25</span><span class="sc">*</span><span class="dv">1000</span>,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                            <span class="at">what =</span> <span class="st">"polygons"</span>, <span class="at">square =</span> <span class="cn">FALSE</span>) </span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>hexgrid <span class="ot">&lt;-</span> <span class="fu">st_sf</span>(<span class="at">index =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(<span class="fu">lengths</span>(hexgrid)), hexgrid)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>hexbin <span class="ot">&lt;-</span> <span class="fu">st_join</span>(map_data, hexgrid, <span class="at">join =</span> st_intersects)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>locs_count <span class="ot">&lt;-</span> hexgrid <span class="sc">%&gt;%</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">count</span>(hexbin, index) <span class="sc">%&gt;%</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>      <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>      dplyr<span class="sc">::</span><span class="fu">select</span>(index, <span class="at">ct=</span>n)</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> tidyr<span class="sc">::</span><span class="fu">drop_na</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
 <div class="cell-output-display">
 <div id="fig-obs-map" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
@@ -627,13 +666,16 @@ Caution
 <h3 class="anchored" data-anchor-id="distribution-of-data-across-time">Distribution of Data Across Time</h3>
 <p>As with spatial distribution, it can also be informative to explore how the amount of data varied over time. This is especially important with bio-logging data because not all deployments start at the same time and deployment end dates are determined by a combination of factors (e.g.&nbsp;battery life, tag failures, adhesive failures, molt, and animal behavior). For this research project, there were two research cruises per year. One was timed to occur just after molt (September-October) so devices adhered to the hair would have potential to last for 9-12 months. The other cruise was timed for May to correspond with the expected median tag duration from the fall cruise. This also ensured a good sample size of deployments would be active during the pupping season (~June).</p>
 <div class="cell">
-<div class="sourceCode" id="cb2"><pre class="sourceCode r cell-code code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>locs_day_tbl <span class="ot">&lt;-</span> <span class="fu">tar_read</span>(locs_data) <span class="sc">%&gt;%</span> </span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  tibble<span class="sc">::</span><span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">yday =</span> lubridate<span class="sc">::</span><span class="fu">yday</span>(locs_dt),</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">year =</span> lubridate<span class="sc">::</span><span class="fu">year</span>(locs_dt)) <span class="sc">%&gt;%</span> </span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"2004"</span>, <span class="st">"2005"</span>, <span class="st">"2006"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">group_by</span>(yday) <span class="sc">%&gt;%</span> </span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">count</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p></p><details>
+<summary>code to calculate locations/day</summary><p></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r cell-code code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>locs_day_tbl <span class="ot">&lt;-</span> <span class="fu">tar_read</span>(locs_data) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  tibble<span class="sc">::</span><span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">yday =</span> lubridate<span class="sc">::</span><span class="fu">yday</span>(locs_dt),</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">year =</span> lubridate<span class="sc">::</span><span class="fu">year</span>(locs_dt)) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"2004"</span>, <span class="st">"2005"</span>, <span class="st">"2006"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">group_by</span>(yday) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">count</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 </div>
 <div class="cell">
 <div class="cell-output-display">
@@ -647,13 +689,16 @@ Caution
 </div>
 <p>The density of locations presented in <a href="#fig-locs-by-day">Figure&nbsp;2</a> are pooled across all the years of the study. But, within a given year, there are larger gaps in data coverage that are important to note. <a href="#fig-locs-by-day-year">Figure&nbsp;3</a> presents the density of location data by year and provides a more insightful view. For instance, most of the data in the study for the months of January through April come from deployments in 2006. Only the months of May-July and September-December are represented in more than one year — all of which is to be expected given the original objectives of the study, typical duration of bio-loggers, and the timing of research cruises.</p>
 <div class="cell">
-<div class="sourceCode" id="cb3"><pre class="sourceCode r cell-code code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>locs_day_year_tbl <span class="ot">&lt;-</span> <span class="fu">tar_read</span>(locs_data) <span class="sc">%&gt;%</span> </span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  tibble<span class="sc">::</span><span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">yday =</span> lubridate<span class="sc">::</span><span class="fu">yday</span>(locs_dt),</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">year =</span> lubridate<span class="sc">::</span><span class="fu">year</span>(locs_dt)) <span class="sc">%&gt;%</span> </span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"2004"</span>, <span class="st">"2005"</span>, <span class="st">"2006"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">group_by</span>(year, yday) <span class="sc">%&gt;%</span> </span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">count</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p></p><details>
+<summary>code to calculate locations/day/year</summary><p></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r cell-code code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>locs_day_year_tbl <span class="ot">&lt;-</span> <span class="fu">tar_read</span>(locs_data) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  tibble<span class="sc">::</span><span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">yday =</span> lubridate<span class="sc">::</span><span class="fu">yday</span>(locs_dt),</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">year =</span> lubridate<span class="sc">::</span><span class="fu">year</span>(locs_dt)) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"2004"</span>, <span class="st">"2005"</span>, <span class="st">"2006"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">group_by</span>(year, yday) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">count</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 </div>
 <div class="cell">
 <div class="cell-output-display">
@@ -698,106 +743,112 @@ Note
 <h2 class="anchored" data-anchor-id="movement-modeling-predicting-paths">Movement Modeling &amp; Predicting Paths</h2>
 <section id="fit-movement-models-with-crawl-package" class="level3">
 <h3 class="anchored" data-anchor-id="fit-movement-models-with-crawl-package">Fit movement models with <code>crawl</code> package</h3>
-<div class="cell" data-file="R/fit_crawl.R">
-<div class="sourceCode" id="cb4"><pre class="sourceCode r cell-code code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>fit_crawl <span class="ot">&lt;-</span> <span class="cf">function</span>(locs_data_filt) {</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  locs <span class="ot">&lt;-</span> locs_data_filt <span class="sc">%&gt;%</span> </span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>(<span class="fu">starts_with</span>(<span class="st">"error_"</span>))) <span class="sc">%&gt;%</span> </span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">quality =</span> forcats<span class="sc">::</span><span class="fu">as_factor</span>(quality) <span class="sc">%&gt;%</span> </span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>             forcats<span class="sc">::</span><span class="fu">fct_relevel</span>(<span class="st">"3"</span>,<span class="st">"2"</span>,<span class="st">"1"</span>,<span class="st">"0"</span>,<span class="st">"A"</span>,<span class="st">"B"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(speno) <span class="sc">%&gt;%</span> </span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(locs_dt) <span class="sc">%&gt;%</span> </span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">nest</span>()</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  locs<span class="sc">$</span>fit <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i=</span><span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(locs))<span class="sc">%do%</span>{</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(locs<span class="sc">$</span>speno[[i]],<span class="st">":</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    tmp <span class="ot">&lt;-</span> locs<span class="sc">$</span>data[[i]]</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    tmp <span class="ot">&lt;-</span> <span class="fu">arrange</span>(tmp, locs_dt)</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    fit <span class="ot">&lt;-</span> <span class="fu">try</span>(<span class="fu">crwMLE</span>(</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>      tmp, <span class="at">err.model=</span><span class="fu">list</span>(<span class="at">x=</span><span class="sc">~</span>quality<span class="dv">-1</span>),</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">Time.name =</span> <span class="st">"locs_dt"</span>,</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>      <span class="at">fixPar =</span> <span class="fu">c</span>(<span class="fu">log</span>(<span class="dv">250</span>), <span class="fu">log</span>(<span class="dv">500</span>), <span class="fu">log</span>(<span class="dv">1500</span>), <span class="fu">rep</span>(<span class="cn">NA</span>,<span class="dv">5</span>)),</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">constr=</span><span class="fu">list</span>(<span class="at">lower=</span><span class="fu">c</span>(<span class="fu">rep</span>(<span class="fu">log</span>(<span class="dv">1500</span>),<span class="dv">3</span>), <span class="fu">rep</span>(<span class="sc">-</span><span class="cn">Inf</span>,<span class="dv">2</span>)),</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>                  <span class="at">upper=</span><span class="fu">rep</span>(<span class="cn">Inf</span>,<span class="dv">5</span>)),</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>      <span class="at">attempts=</span><span class="dv">8</span>,</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>      <span class="at">retrySD=</span><span class="fl">0.25</span>,</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>      <span class="at">initialSANN=</span><span class="cn">NULL</span>,</span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>      <span class="co"># prior=function(x){dexp(x[1],1/2,log=TRUE) + dnorm(x[3],2,2.5)},</span></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>      <span class="at">method=</span><span class="st">"L-BFGS-B"</span></span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    ))</span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">inherits</span>(fit,<span class="st">"error"</span>)) fit <span class="ot">&lt;-</span> <span class="st">"fit_error"</span></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    fit</span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(locs)</span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-file="../R/fit_crawl.R">
+<p></p><details>
+<summary>Code</summary><p></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r cell-code code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>fit_crawl <span class="ot">&lt;-</span> <span class="cf">function</span>(locs_data_filt) {</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  locs <span class="ot">&lt;-</span> locs_data_filt <span class="sc">%&gt;%</span> </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>(<span class="fu">starts_with</span>(<span class="st">"error_"</span>))) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">quality =</span> forcats<span class="sc">::</span><span class="fu">as_factor</span>(quality) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>             forcats<span class="sc">::</span><span class="fu">fct_relevel</span>(<span class="st">"3"</span>,<span class="st">"2"</span>,<span class="st">"1"</span>,<span class="st">"0"</span>,<span class="st">"A"</span>,<span class="st">"B"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(speno) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(locs_dt) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">nest</span>()</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  locs<span class="sc">$</span>fit <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i=</span><span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(locs))<span class="sc">%do%</span>{</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(locs<span class="sc">$</span>speno[[i]],<span class="st">":</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    tmp <span class="ot">&lt;-</span> locs<span class="sc">$</span>data[[i]]</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    tmp <span class="ot">&lt;-</span> <span class="fu">arrange</span>(tmp, locs_dt)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    fit <span class="ot">&lt;-</span> <span class="fu">try</span>(<span class="fu">crwMLE</span>(</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>      tmp, <span class="at">err.model=</span><span class="fu">list</span>(<span class="at">x=</span><span class="sc">~</span>quality<span class="dv">-1</span>),</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">Time.name =</span> <span class="st">"locs_dt"</span>,</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>      <span class="at">fixPar =</span> <span class="fu">c</span>(<span class="fu">log</span>(<span class="dv">250</span>), <span class="fu">log</span>(<span class="dv">500</span>), <span class="fu">log</span>(<span class="dv">1500</span>), <span class="fu">rep</span>(<span class="cn">NA</span>,<span class="dv">5</span>)),</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">constr=</span><span class="fu">list</span>(<span class="at">lower=</span><span class="fu">c</span>(<span class="fu">rep</span>(<span class="fu">log</span>(<span class="dv">1500</span>),<span class="dv">3</span>), <span class="fu">rep</span>(<span class="sc">-</span><span class="cn">Inf</span>,<span class="dv">2</span>)),</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>                  <span class="at">upper=</span><span class="fu">rep</span>(<span class="cn">Inf</span>,<span class="dv">5</span>)),</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>      <span class="at">attempts=</span><span class="dv">8</span>,</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>      <span class="at">retrySD=</span><span class="fl">0.25</span>,</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>      <span class="at">initialSANN=</span><span class="cn">NULL</span>,</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>      <span class="co"># prior=function(x){dexp(x[1],1/2,log=TRUE) + dnorm(x[3],2,2.5)},</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>      <span class="at">method=</span><span class="st">"L-BFGS-B"</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    ))</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">inherits</span>(fit,<span class="st">"error"</span>)) fit <span class="ot">&lt;-</span> <span class="st">"fit_error"</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>    fit</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(locs)</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 </div>
 </section>
 <section id="re-fit-any-problematic-deployments" class="level3">
 <h3 class="anchored" data-anchor-id="re-fit-any-problematic-deployments">Re-fit any problematic deployments</h3>
-<div class="cell" data-file="R/refit_crawl.R">
-<div class="sourceCode" id="cb5"><pre class="sourceCode r cell-code code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>refit_crawl <span class="ot">&lt;-</span> <span class="cf">function</span>(locs) {</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="do">### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="do">### re-fit with prior for animals with errors</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="do">### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  locs<span class="sc">$</span>ok_fit <span class="ot">&lt;-</span> <span class="fu">map_chr</span>(locs<span class="sc">$</span>fit, class)<span class="sc">!=</span><span class="st">"character"</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  prob_data <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(locs, <span class="sc">!</span>ok_fit)</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  locs <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(locs, ok_fit)</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  locs<span class="ot">&lt;-</span> <span class="fu">mutate</span>(</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    locs,</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">par =</span> <span class="fu">map</span>(fit, <span class="sc">~</span>{.x<span class="sc">$</span>estPar}),</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">cmat =</span> <span class="fu">map</span>(fit, <span class="sc">~</span>{.x<span class="sc">$</span>Cmat})</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">nrow</span>(prob_data) <span class="sc">==</span> <span class="dv">0</span>) {</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(locs)</span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>  <span class="do">### Create normal prior for non-fitting animals</span></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>  par <span class="ot">&lt;-</span> <span class="fu">do.call</span>(<span class="st">"rbind"</span>, locs<span class="sc">$</span>par)</span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>  avg_cmat <span class="ot">&lt;-</span> (<span class="fu">Reduce</span>(<span class="st">`</span><span class="at">+</span><span class="st">`</span>, locs<span class="sc">$</span>cmat)<span class="sc">/</span><span class="fu">nrow</span>(locs))[<span class="sc">-</span><span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>),<span class="sc">-</span><span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>)]</span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>  pmu <span class="ot">&lt;-</span> <span class="fu">colMeans</span>(par)</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>  pC <span class="ot">&lt;-</span> <span class="fu">var</span>(par) <span class="sc">+</span> avg_cmat</span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>  <span class="do">### Re-fit problem animals</span></span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">nrow</span>(prob_data)<span class="sc">&gt;</span><span class="dv">0</span>){</span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>    ln_prior <span class="ot">&lt;-</span> <span class="cf">function</span>(x){<span class="sc">-</span><span class="fl">0.5</span><span class="sc">*</span><span class="fu">t</span>(x<span class="sc">-</span>pmu)<span class="sc">%*%</span><span class="fu">solve</span>(pC,(x<span class="sc">-</span>pmu))}</span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>    locs<span class="sc">$</span>fit <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i=</span><span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(locs))<span class="sc">%do%</span>{</span>
-<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cat</span>(locs<span class="sc">$</span>speno[[i]],<span class="st">":</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>      tmp <span class="ot">&lt;-</span> locs<span class="sc">$</span>data[[i]]</span>
-<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>      tmp <span class="ot">&lt;-</span> <span class="fu">arrange</span>(tmp, locs_dt)</span>
-<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>      fit <span class="ot">&lt;-</span> <span class="fu">try</span>(<span class="fu">crwMLE</span>(</span>
-<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>        tmp, <span class="at">err.model=</span><span class="fu">list</span>(<span class="at">x=</span><span class="sc">~</span>quality<span class="dv">-1</span>),</span>
-<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>        <span class="at">Time.name =</span> <span class="st">"locs_dt"</span>,</span>
-<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>        <span class="at">fixPar =</span> <span class="fu">c</span>(<span class="fu">log</span>(<span class="dv">250</span>), <span class="fu">log</span>(<span class="dv">500</span>), <span class="fu">log</span>(<span class="dv">1500</span>), <span class="fu">rep</span>(<span class="cn">NA</span>,<span class="dv">5</span>)),</span>
-<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>        <span class="at">theta =</span> pmu,</span>
-<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>        <span class="at">constr=</span><span class="fu">list</span>(<span class="at">lower=</span><span class="fu">c</span>(<span class="fu">rep</span>(<span class="fu">log</span>(<span class="dv">1500</span>),<span class="dv">3</span>), <span class="fu">rep</span>(<span class="sc">-</span><span class="cn">Inf</span>,<span class="dv">2</span>)),</span>
-<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>                    <span class="at">upper=</span><span class="fu">rep</span>(<span class="cn">Inf</span>,<span class="dv">5</span>)),</span>
-<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>        <span class="at">attempts=</span><span class="dv">10</span>,</span>
-<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>        <span class="at">retrySD=</span><span class="fl">0.25</span>,</span>
-<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>        <span class="at">initialSANN=</span><span class="cn">NULL</span>,</span>
-<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>        <span class="at">prior=</span>ln_prior,</span>
-<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>        <span class="at">method=</span><span class="st">"L-BFGS-B"</span></span>
-<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>      ))</span>
-<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span>(<span class="fu">inherits</span>(fit,<span class="st">"error"</span>)) fit <span class="ot">&lt;-</span> <span class="st">"fit_error"</span></span>
-<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>      fit</span>
-<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>    <span class="do">### Check again to see if there are problem animals</span></span>
-<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>   locs<span class="sc">$</span>ok_fit <span class="ot">&lt;-</span>  <span class="fu">map_chr</span>(locs<span class="sc">$</span>fit, class)<span class="sc">!=</span><span class="st">"character"</span></span>
-<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">all</span>(locs<span class="sc">$</span>ok_fit)){</span>
-<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>      locs <span class="ot">&lt;-</span> <span class="fu">mutate</span>(</span>
-<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a>        locs,</span>
-<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>        <span class="at">par =</span> <span class="fu">map</span>(fit, <span class="sc">~</span>{.x<span class="sc">$</span>estPar}),</span>
-<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>        <span class="at">cmat =</span> <span class="fu">map</span>(fit, <span class="sc">~</span>{.x<span class="sc">$</span>Cmat})</span>
-<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a>      )</span>
-<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span>{</span>
-<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="st">"!!! There are still problem fits, must investigate !!!"</span>)</span>
-<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="st">"Animals: "</span>, <span class="fu">which</span>(<span class="sc">!</span>locs<span class="sc">$</span>ok_fit))</span>
-<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(locs)</span>
-<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-file="../R/refit_crawl.R">
+<p></p><details>
+<summary>Code</summary><p></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r cell-code code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>refit_crawl <span class="ot">&lt;-</span> <span class="cf">function</span>(locs) {</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="do">### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="do">### re-fit with prior for animals with errors</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="do">### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  locs<span class="sc">$</span>ok_fit <span class="ot">&lt;-</span> <span class="fu">map_chr</span>(locs<span class="sc">$</span>fit, class)<span class="sc">!=</span><span class="st">"character"</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  prob_data <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(locs, <span class="sc">!</span>ok_fit)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  locs <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(locs, ok_fit)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  locs<span class="ot">&lt;-</span> <span class="fu">mutate</span>(</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    locs,</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">par =</span> <span class="fu">map</span>(fit, <span class="sc">~</span>{.x<span class="sc">$</span>estPar}),</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">cmat =</span> <span class="fu">map</span>(fit, <span class="sc">~</span>{.x<span class="sc">$</span>Cmat})</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">nrow</span>(prob_data) <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(locs)</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>  <span class="do">### Create normal prior for non-fitting animals</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>  par <span class="ot">&lt;-</span> <span class="fu">do.call</span>(<span class="st">"rbind"</span>, locs<span class="sc">$</span>par)</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>  avg_cmat <span class="ot">&lt;-</span> (<span class="fu">Reduce</span>(<span class="st">`</span><span class="at">+</span><span class="st">`</span>, locs<span class="sc">$</span>cmat)<span class="sc">/</span><span class="fu">nrow</span>(locs))[<span class="sc">-</span><span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>),<span class="sc">-</span><span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>)]</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>  pmu <span class="ot">&lt;-</span> <span class="fu">colMeans</span>(par)</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>  pC <span class="ot">&lt;-</span> <span class="fu">var</span>(par) <span class="sc">+</span> avg_cmat</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>  <span class="do">### Re-fit problem animals</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">nrow</span>(prob_data)<span class="sc">&gt;</span><span class="dv">0</span>){</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    ln_prior <span class="ot">&lt;-</span> <span class="cf">function</span>(x){<span class="sc">-</span><span class="fl">0.5</span><span class="sc">*</span><span class="fu">t</span>(x<span class="sc">-</span>pmu)<span class="sc">%*%</span><span class="fu">solve</span>(pC,(x<span class="sc">-</span>pmu))}</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>    locs<span class="sc">$</span>fit <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i=</span><span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(locs))<span class="sc">%do%</span>{</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cat</span>(locs<span class="sc">$</span>speno[[i]],<span class="st">":</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>      tmp <span class="ot">&lt;-</span> locs<span class="sc">$</span>data[[i]]</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>      tmp <span class="ot">&lt;-</span> <span class="fu">arrange</span>(tmp, locs_dt)</span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>      fit <span class="ot">&lt;-</span> <span class="fu">try</span>(<span class="fu">crwMLE</span>(</span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>        tmp, <span class="at">err.model=</span><span class="fu">list</span>(<span class="at">x=</span><span class="sc">~</span>quality<span class="dv">-1</span>),</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>        <span class="at">Time.name =</span> <span class="st">"locs_dt"</span>,</span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>        <span class="at">fixPar =</span> <span class="fu">c</span>(<span class="fu">log</span>(<span class="dv">250</span>), <span class="fu">log</span>(<span class="dv">500</span>), <span class="fu">log</span>(<span class="dv">1500</span>), <span class="fu">rep</span>(<span class="cn">NA</span>,<span class="dv">5</span>)),</span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>        <span class="at">theta =</span> pmu,</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>        <span class="at">constr=</span><span class="fu">list</span>(<span class="at">lower=</span><span class="fu">c</span>(<span class="fu">rep</span>(<span class="fu">log</span>(<span class="dv">1500</span>),<span class="dv">3</span>), <span class="fu">rep</span>(<span class="sc">-</span><span class="cn">Inf</span>,<span class="dv">2</span>)),</span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>                    <span class="at">upper=</span><span class="fu">rep</span>(<span class="cn">Inf</span>,<span class="dv">5</span>)),</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>        <span class="at">attempts=</span><span class="dv">10</span>,</span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>        <span class="at">retrySD=</span><span class="fl">0.25</span>,</span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>        <span class="at">initialSANN=</span><span class="cn">NULL</span>,</span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>        <span class="at">prior=</span>ln_prior,</span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>        <span class="at">method=</span><span class="st">"L-BFGS-B"</span></span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>      ))</span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span>(<span class="fu">inherits</span>(fit,<span class="st">"error"</span>)) fit <span class="ot">&lt;-</span> <span class="st">"fit_error"</span></span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>      fit</span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>    <span class="do">### Check again to see if there are problem animals</span></span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>   locs<span class="sc">$</span>ok_fit <span class="ot">&lt;-</span>  <span class="fu">map_chr</span>(locs<span class="sc">$</span>fit, class)<span class="sc">!=</span><span class="st">"character"</span></span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">all</span>(locs<span class="sc">$</span>ok_fit)){</span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>      locs <span class="ot">&lt;-</span> <span class="fu">mutate</span>(</span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>        locs,</span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a>        <span class="at">par =</span> <span class="fu">map</span>(fit, <span class="sc">~</span>{.x<span class="sc">$</span>estPar}),</span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a>        <span class="at">cmat =</span> <span class="fu">map</span>(fit, <span class="sc">~</span>{.x<span class="sc">$</span>Cmat})</span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span>{</span>
+<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="st">"!!! There are still problem fits, must investigate !!!"</span>)</span>
+<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="st">"Animals: "</span>, <span class="fu">which</span>(<span class="sc">!</span>locs<span class="sc">$</span>ok_fit))</span>
+<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(locs)</span>
+<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 </div>
 </section>
 </section>

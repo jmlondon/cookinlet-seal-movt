@@ -4,8 +4,11 @@ format:
   html:
     theme: cosmo
     mainfont: 'Public Sans'
+    code-fold: true
 toc: true
-toc-depth: 2
+toc-depth: 3
+execute:
+  echo: false
 crossref:
   tbl-prefix: Table
   fig-prefix: Figure
@@ -42,12 +45,11 @@ that hour --- this indicates what percentage of the hour the seal was likely
 hauled out on land resting.
 :::
 
-```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+```{r setup, warning=FALSE, message=FALSE}
 
 knitr::opts_chunk$set(
   warning = FALSE,
   message = FALSE,
-  include = FALSE,
   dev = "ragg_png"
 )
 
@@ -70,7 +72,9 @@ theme_replace(plot.title.position = "plot")
 
 ### Background
 
-```{r summary-tbl-data, include=TRUE}
+```{r summary-tbl-data}
+#| echo: true
+#| code-summary: 'code to create summary table'
 
 summary_tbl <- tar_read(locs_data) %>% 
   as_tibble() %>% 
@@ -89,22 +93,21 @@ Between 2004 and 2006, `r sum(summary_tbl$n_seals)` were captured and released
 with satellite-linked bio-loggers attached as part of a research effort in Cook
 Inlet, Alaska. Each transmitter was glued to the hair on the back of the seal
 using durable epoxy. Fourteen of the seals were also equipped with specially
-developed transmitters that were attached to one of the rear flippers. 
-@tbl-summary provides more information on the distriubtion of deployments
-across sex and age classes.
-Transmissions from the `r sum(summary_tbl$n_tags)` bio-loggers resulted in 
-`r nrow(tar_read(locs_data))` location estimates and 
-`r nrow(tar_read(timeline_data))` haul-out behavior records. Harbor seals captured
-in central and southern Cook Inlet ranged as far southwest as the Semidi Islands
-and some seals used habitats around the north and northeast side of Kodiak
-Island. There was a strong seasonal pattern of more coastal and restricted
-spatial use during the spring and summer (breeding, pupping, molting) and more
-wide-ranging movements within and outside of Cook Inlet during the winter
-months. These insights into seasonal harbor seal movements, behavior and
+developed transmitters that were attached to one of the rear flippers.
+@tbl-summary provides more information on the distriubtion of deployments across
+sex and age classes. Transmissions from the `r sum(summary_tbl$n_tags)`
+bio-loggers resulted in `r nrow(tar_read(locs_data))` location estimates and
+`r nrow(tar_read(timeline_data))` haul-out behavior records. Harbor seals
+captured in central and southern Cook Inlet ranged as far southwest as the
+Semidi Islands and some seals used habitats around the north and northeast side
+of Kodiak Island. There was a strong seasonal pattern of more coastal and
+restricted spatial use during the spring and summer (breeding, pupping, molting)
+and more wide-ranging movements within and outside of Cook Inlet during the
+winter months. These insights into seasonal harbor seal movements, behavior and
 abundance are critical for understanding foraging ecology, marine habitat use,
 and risk of impacts from industrial accidents such as oil spills.
 
-```{r tbl-summary, echo=FALSE, include=TRUE}
+```{r tbl-summary}
 #| tbl-cap: "The number of bio-loggers deployed on harbor seals in
 #| Cook Inlet, Alaska between 2004 and 2006 across sex and age class.
 #| A few seals were released with two devices attached; one adhered to
@@ -225,32 +228,32 @@ summary_tbl %>%
 
 All the processes and code used for this project are [available as a repository
 on GitHub](https://github.com/jmlondon/cookinlet-seal-movt). Data retrieval,
-processing, analysis are all managed as a _pipeline_ via the `targets` package in
-R. For a more detailed exploration of the code and process, examine the 
-[_targets.R](https://github.com/jmlondon/cookinlet-seal-movt/blob/main/_targets.R) file
-and the functions [within the project's R folder](https://github.com/jmlondon/cookinlet-seal-movt/tree/main/R).
+processing, analysis are all managed as a *pipeline* via the `targets` package
+in R. For a more detailed exploration of the code and process, examine the
+[\_targets.R](https://github.com/jmlondon/cookinlet-seal-movt/blob/main/_targets.R)
+file and the functions [within the project's R
+folder](https://github.com/jmlondon/cookinlet-seal-movt/tree/main/R).
 
-
-All of the tags deployed on seals in Cook Inlet were manufactured by
-[Wildlife Computer](https://wildlifecomputers.com) and originally processed
-through their data portal. To facilitate access to data from the portal
-within R, we relied on the `wcUtils` R package which 
-[is available from GitHub](https://github.com/jmlondon/wcUtils). All telemetry
-data within the Polar Ecosystems Program (PEP) is maintained within a PostgreSQL
-database. This also includes important details regarding the individual seal
-(e.g. _speno_, age class, sex, morphometrics) and additional deployment metadata for
-each bio-logger (e.g. _deployid_, deployment start/end times, tag serial number).
+All of the tags deployed on seals in Cook Inlet were manufactured by [Wildlife
+Computer](https://wildlifecomputers.com) and originally processed through their
+data portal. To facilitate access to data from the portal within R, we relied on
+the `wcUtils` R package which [is available from
+GitHub](https://github.com/jmlondon/wcUtils). All telemetry data within the
+Polar Ecosystems Program (PEP) is maintained within a PostgreSQL database. This
+also includes important details regarding the individual seal (e.g. *speno*, age
+class, sex, morphometrics) and additional deployment metadata for each
+bio-logger (e.g. *deployid*, deployment start/end times, tag serial number).
 Initial data were queried from the database and, for the location observations,
 a course speed filter was applied (7.5 meters/sec) to remove any egregiously
 wrong location estimates. The percent-dry timeline data were mostly as is from
 the database
 
-::: {.callout-caution}
+::: callout-caution
 The current version of the data delivered via `pins` **does not group
-deployments by _speno_**. Instead each deployment is treated as a separate
-individual seal. This is problematic for those seals that were released
-with two bio-logging devices. This will be resolved in the next major iteration
-of the data published via `pins`.
+deployments by *speno***. Instead each deployment is treated as a separate
+individual seal. This is problematic for those seals that were released with two
+bio-logging devices. This will be resolved in the next major iteration of the
+data published via `pins`.
 :::
 
 ### Mapping the Observed Location Data
@@ -265,6 +268,8 @@ as the spatial distribution extends well inland beyond what would be sensible
 for harbor seals.
 
 ```{r obs-hexbins}
+#| echo: true
+#| code-summary: code for map data
 map_data <- tar_read(locs_data) %>% 
   dplyr::mutate(year = lubridate::year(locs_dt)) %>% 
   dplyr::filter(year %in% c("2004", "2005", "2006")) %>% 
@@ -284,7 +289,7 @@ locs_count <- hexgrid %>%
   ) %>% tidyr::drop_na()
 ```
 
-```{r, include=TRUE, echo = FALSE, fig.height=6}
+```{r, fig.height=6}
 #| label: fig-obs-map
 #| fig-cap: "Spatial distribution of observed location estimates from
 #| bio-loggers deployed on harbor seals in Cook Inlet from 2004-2006."
@@ -311,22 +316,23 @@ ggplot() +
   labs(caption = bquote("One hexagonal cell represents 25"~km^2))
 ```
 
-
 ### Distribution of Data Across Time
 
 As with spatial distribution, it can also be informative to explore how the
 amount of data varied over time. This is especially important with bio-logging
-data because not all deployments start at the same time and deployment end
-dates are determined by a combination of factors (e.g. battery life, tag
-failures, adhesive failures, molt, and animal behavior). For this research
-project, there were two research cruises per year. One was timed to occur just
-after molt (September-October) so devices adhered to the hair would have potential to last for
-9-12 months. The other cruise was timed for May to correspond with the 
+data because not all deployments start at the same time and deployment end dates
+are determined by a combination of factors (e.g. battery life, tag failures,
+adhesive failures, molt, and animal behavior). For this research project, there
+were two research cruises per year. One was timed to occur just after molt
+(September-October) so devices adhered to the hair would have potential to last
+for 9-12 months. The other cruise was timed for May to correspond with the
 expected median tag duration from the fall cruise. This also ensured a good
-sample size of deployments would be active during the pupping season (~June).
+sample size of deployments would be active during the pupping season (\~June).
 
+```{r locs-day-tbl}
+#| echo: true
+#| code-summary: code to calculate locations/day
 
-```{r locs-day-tbl, include=TRUE}
 locs_day_tbl <- tar_read(locs_data) %>% 
   tibble::as_tibble() %>% 
   dplyr::mutate(yday = lubridate::yday(locs_dt),
@@ -336,8 +342,7 @@ locs_day_tbl <- tar_read(locs_data) %>%
   dplyr::count()
 ```
 
-
-```{r, include=TRUE, echo=FALSE}
+```{r}
 #| label: fig-locs-by-day
 #| fig.height: 3
 #| fig-cap: "Distribution of observed location data by day-of-year and
@@ -368,17 +373,20 @@ ggplot(data = locs_day_tbl, aes(x = yday, y = 1, fill = n))+
           subtitle = "data are presented as the number of locations per day collated across years (2004-2006)")
 ```
 
-The density of locations presented in @fig-locs-by-day are pooled across all
-the years of the study. But, within a given year, there are larger gaps in
-data coverage that are important to note. @fig-locs-by-day-year presents the
-density of location data by year and provides a more insightful view. For
-instance, most of the data in the study for the months of January through
-April come from deployments in 2006. Only the months of May-July and 
-September-December are represented in more than one year --- all of which is to
-be expected given the original objectives of the study, typical duration of
-bio-loggers, and the timing of research cruises.
+The density of locations presented in @fig-locs-by-day are pooled across all the
+years of the study. But, within a given year, there are larger gaps in data
+coverage that are important to note. @fig-locs-by-day-year presents the density
+of location data by year and provides a more insightful view. For instance, most
+of the data in the study for the months of January through April come from
+deployments in 2006. Only the months of May-July and September-December are
+represented in more than one year --- all of which is to be expected given the
+original objectives of the study, typical duration of bio-loggers, and the
+timing of research cruises.
 
-```{r locs-day-yr-tbl, include=TRUE}
+```{r locs-day-yr-tbl}
+#| echo: true
+#| code-summary: code to calculate locations/day/year
+
 locs_day_year_tbl <- tar_read(locs_data) %>% 
   tibble::as_tibble() %>% 
   dplyr::mutate(yday = lubridate::yday(locs_dt),
@@ -388,7 +396,7 @@ locs_day_year_tbl <- tar_read(locs_data) %>%
   dplyr::count()
 ```
 
-```{r, include=TRUE, echo=FALSE}
+```{r}
 #| label: fig-locs-by-day-year
 #| fig.height: 5
 #| fig-cap: "Distribution of observed location data by day-of-year for
@@ -433,7 +441,7 @@ firmware every few seconds and the percent of the hour in the dry state was
 calculated. On board the bio-logger, hourly percent-dry data were rounded to the
 nearest 10% inclusive of 0% and 100% and additional values at 3% and 98%.
 
-```{r, include = TRUE, echo = FALSE}
+```{r}
 #| label: fig-percent-dry
 #| fig-cap: "Haul-out behavior observations recorded by a bio-logger deployed
 #| on a harbor seal over two years. Areas of the plot with white space represent
@@ -468,25 +476,24 @@ p <- p + theme(legend.position = "bottom") +
 p
 ```
 
-::: {.callout-note}
-There's currently an issue with the figure above b/c there's missing data
-for entire months of July and August. Will need to supplement the data
-record with missing values to make the plot consistent.
+::: callout-note
+There's currently an issue with the figure above b/c there's missing data for
+entire months of July and August. Will need to supplement the data record with
+missing values to make the plot consistent.
 :::
 
 ## Movement Modeling & Predicting Paths
 
 ### Fit movement models with `crawl` package
 
-```{r, file = 'R/fit_crawl.R', include=TRUE, eval=FALSE, echo=TRUE}
+```{r, file = '../R/fit_crawl.R', eval=FALSE, echo=TRUE}
 
 ```
 
 ### Re-fit any problematic deployments
 
-```{r, file = 'R/refit_crawl.R', include=TRUE, eval=FALSE, echo=TRUE}
+```{r, file = '../R/refit_crawl.R', eval=FALSE, echo=TRUE}
 
 ```
-
 
 ## Re-routing Paths Around Land Barriers

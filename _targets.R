@@ -1,4 +1,5 @@
 library(targets)
+library(tarchetypes)
 library(future)
 library(future.callr)
 plan(callr)
@@ -49,4 +50,5 @@ list(
   tar_target(predicted_plot, plot_predicted_lines(path_lines, land_osm)),
   tar_target(joint_data, join_w_timeline(paths, timeline_data)),
   tar_target(pin, publish_as_pin(joint_data))
+ # tar_render(move_paths_report, "docs/move-paths.qmd")
 )
