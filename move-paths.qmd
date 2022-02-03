@@ -432,7 +432,7 @@ firmware every few seconds and the percent of the hour in the dry state was
 calculated. On board the bio-logger, hourly percent-dry data were rounded to the
 nearest 10% inclusive of 0% and 100% and additional values at 3% and 98%.
 
-```{r include = TRUE, echo = FALSE}
+```{r, include = TRUE, echo = FALSE}
 #| label: fig-percent-dry
 #| fig-cap: "Haul-out behavior observations recorded by a bio-logger deployed
 #| on a harbor seal over two years. Areas of the plot with white space represent
