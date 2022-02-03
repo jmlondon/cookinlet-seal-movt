@@ -284,7 +284,8 @@ locs_count <- hexgrid %>%
   ) %>% tidyr::drop_na()
 ```
 
-```{r fig-obs-map, include=TRUE, echo = FALSE, fig.height=6}
+```{r, include=TRUE, echo = FALSE, fig.height=6}
+#| label: fig-obs-map
 #| fig-cap: "Spatial distribution of observed location estimates from
 #| bio-loggers deployed on harbor seals in Cook Inlet from 2004-2006."
 
@@ -302,7 +303,7 @@ ggplot() +
     name = "Number of locations",
     guide = guide_colorbar(barwidth = 1,title.position = "right",
                            title.hjust = 0.5,
-                           barheight = 10)
+                           barheight = 12)
     ) + 
   theme(legend.title = element_text(angle = -90)) +
   guides(alpha="none") +
