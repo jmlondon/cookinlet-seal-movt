@@ -476,5 +476,17 @@ record with missing values to make the plot consistent.
 
 ## Movement Modeling & Predicting Paths
 
+### Fit movement models with `crawl` package
+
+```{r, file = 'R/fit_crawl.R', include=TRUE, eval=FALSE, echo=TRUE}
+
+```
+
+### Re-fit any problematic deployments
+
+```{r, file = 'R/refit_crawl.R', include=TRUE, eval=FALSE, echo=TRUE}
+
+```
+
 
 ## Re-routing Paths Around Land Barriers
