@@ -63,17 +63,10 @@ library(MetBrewer)
 options(scipen = 3, digits = 3)
 
 theme_set(theme_minimal(base_family = 'Public Sans'))
-#theme_replace(plot.title.position = "plot")
+theme_replace(plot.title.position = "plot")
 ```
 
 ## Importing & Tidy-ing the Telemetry Data
-
--   [x] background on the Cook Inlet research project (number of seals, years,
-    etc)
--   [x] data handling and management
--   [x] map of raw argos locations / consider hex count instead
--   [x] figure of data density (number of seal hours/day over years)
--   [ ] example figure of percent-dry timeline data
 
 ### Background
 
@@ -428,8 +421,59 @@ ggplot(data = locs_day_year_tbl, aes(x = yday, y = 1, fill = n))+
 
 ### Percent-dry Timeline Data
 
+In addition to the location estimates, the bio-loggers in this study also
+recorded the percentage of each hour the wet/dry sensor was dry. This is a way
+to explore haul-out behavior because, other than a few rare instances when a
+seal rests on the surface for extended periods, the percent-dry can be
+interpreted as percent of the hour hauled out. Haul-out behavior data were
+recorded and transmitted via the Argos satellite network as hourly percent-dry
+timelines. For each hour of a day, the wet/dry sensor was polled by the tag
+firmware every few seconds and the percent of the hour in the dry state was
+calculated. On board the bio-logger, hourly percent-dry data were rounded to the
+nearest 10% inclusive of 0% and 100% and additional values at 3% and 98%.
 
+```{r include = TRUE, echo = FALSE}
+#| label: fig-percent-dry
+#| fig-cap: "Haul-out behavior observations recorded by a bio-logger deployed
+#| on a harbor seal over two years. Areas of the plot with white space represent
+#| missing data that were not successfully received from the tag."
+
+d <- tar_read(timeline_data) %>% filter(deployid == "PV2005_0267_05L0083") %>% 
+  dplyr::select(speno, timeline_start_dt, percent_dry) %>% 
+  arrange(timeline_start_dt) %>% 
+  mutate(year = lubridate::year(timeline_start_dt),
+         month = lubridate::month(timeline_start_dt,label=TRUE),
+         day = lubridate::day(timeline_start_dt),
+         hour = lubridate::hour(timeline_start_dt))
+
+p <- ggplot(d,aes(day,hour,fill=percent_dry))+
+  geom_tile(color= "white",size=0) + 
+  scale_fill_gradientn(colors = rev(met.brewer("Hiroshige")),
+                       name = "hourly percent dry", aesthetics = "fill",
+    guide = guide_colorbar(title.position = "bottom", barwidth = 15,
+                           barheight = 0.5, title.hjust = 0.5)
+    )
+
+p <- p + facet_grid(year~month, scales = "free_x")
+p <- p + scale_x_continuous(breaks = c(5,15,25), expand = c(0,0)) +
+  scale_y_continuous(breaks = c(4,12,20))
+p <- p + theme(legend.position = "bottom") +
+  theme(strip.background = element_rect(colour="white")) +
+  theme(axis.ticks=element_blank()) +
+  theme(panel.spacing = unit(0,"line")) +
+  ggtitle("Observation records are incomplete because not all data are transmitted",
+          subtitle = "percent-dry actogram for a single harbor seal across two years") +
+  xlab("day of month") + ylab("hour (UTC)")
+p
+```
+
+::: {.callout-note}
+There's currently an issue with the figure above b/c there's missing data
+for entire months of July and August. Will need to supplement the data
+record with missing values to make the plot consistent.
+:::
 
 ## Movement Modeling & Predicting Paths
+
 
 ## Re-routing Paths Around Land Barriers
