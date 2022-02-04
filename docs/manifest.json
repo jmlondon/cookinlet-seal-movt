@@ -4,9 +4,9 @@
   "platform": "4.1.2",
   "metadata": {
     "appmode": "rmd-static",
-    "primary_rmd": "move-paths.qmd",
-    "primary_html": null,
-    "content_category": null,
+    "primary_rmd": null,
+    "primary_html": "move-paths.html",
+    "content_category": "site",
     "has_parameters": false
   },
   "packages": {
